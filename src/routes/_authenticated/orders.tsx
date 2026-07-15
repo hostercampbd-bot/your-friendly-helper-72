@@ -50,7 +50,7 @@ function Page() {
           <DialogTrigger asChild><Button disabled={!customers.length || !products.length} onClick={() => setEdit(null)}>New order</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{edit ? "Edit" : "New"} order</DialogTitle></DialogHeader>
-            <Form initial={edit} customers={customers} products={products} licenses={licenses} onSubmit={(v) => saveM.mutate(v)} busy={saveM.isPending} />
+            <Form initial={edit} customers={customers} products={products} licenses={licenses} onSubmit={(v: any) => saveM.mutate(v)} busy={saveM.isPending} />
           </DialogContent>
         </Dialog>
       </div>

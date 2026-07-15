@@ -44,7 +44,7 @@ function ProductsPage() {
           <DialogTrigger asChild><Button onClick={() => setEdit(null)}>New product</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{edit ? "Edit" : "New"} product</DialogTitle></DialogHeader>
-            <ProductForm initial={edit} onSubmit={(v) => saveM.mutate(v)} busy={saveM.isPending} />
+            <ProductForm initial={edit} onSubmit={(v: any) => saveM.mutate(v)} busy={saveM.isPending} />
           </DialogContent>
         </Dialog>
       </div>

@@ -73,7 +73,7 @@ function Page() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>New license</DialogTitle></DialogHeader>
-            <CreateForm customers={customers} products={products} onSubmit={(v) => createM.mutate(v)} busy={createM.isPending} />
+            <CreateForm customers={customers} products={products} onSubmit={(v: any) => createM.mutate(v)} busy={createM.isPending} />
           </DialogContent>
         </Dialog>
       </div>
@@ -116,7 +116,7 @@ function Page() {
               license={detail}
               activations={activations.filter((a: any) => a.license_id === detail.id)}
               onUpdate={(v) => updateM.mutate({ id: detail.id, ...v })}
-              onRemoveActivation={(id) => rmActM.mutate(id)}
+              onRemoveActivation={(id: string) => rmActM.mutate(id)}
             />
           )}
         </DialogContent>

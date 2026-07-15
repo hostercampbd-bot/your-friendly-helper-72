@@ -44,7 +44,7 @@ function Page() {
           <DialogTrigger asChild><Button onClick={() => setEdit(null)}>New customer</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>{edit ? "Edit" : "New"} customer</DialogTitle></DialogHeader>
-            <Form initial={edit} onSubmit={(v) => saveM.mutate(v)} busy={saveM.isPending} />
+            <Form initial={edit} onSubmit={(v: any) => saveM.mutate(v)} busy={saveM.isPending} />
           </DialogContent>
         </Dialog>
       </div>
