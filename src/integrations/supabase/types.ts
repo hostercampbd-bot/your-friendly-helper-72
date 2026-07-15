@@ -14,16 +14,254 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activations: {
+        Row: {
+          activated_at: string
+          domain: string
+          id: string
+          ip: string | null
+          last_check_at: string
+          license_id: string
+        }
+        Insert: {
+          activated_at?: string
+          domain: string
+          id?: string
+          ip?: string | null
+          last_check_at?: string
+          license_id: string
+        }
+        Update: {
+          activated_at?: string
+          domain?: string
+          id?: string
+          ip?: string | null
+          last_check_at?: string
+          license_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activations_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      licenses: {
+        Row: {
+          created_at: string
+          customer_id: string
+          expires_at: string | null
+          id: string
+          license_key: string
+          max_activations: number
+          notes: string | null
+          product_id: string
+          status: Database["public"]["Enums"]["license_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          expires_at?: string | null
+          id?: string
+          license_key: string
+          max_activations?: number
+          notes?: string | null
+          product_id: string
+          status?: Database["public"]["Enums"]["license_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          expires_at?: string | null
+          id?: string
+          license_key?: string
+          max_activations?: number
+          notes?: string | null
+          product_id?: string
+          status?: Database["public"]["Enums"]["license_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "licenses_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "licenses_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          customer_id: string
+          external_ref: string | null
+          id: string
+          license_id: string | null
+          product_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          customer_id: string
+          external_ref?: string | null
+          id?: string
+          license_id?: string | null
+          product_id: string
+          status?: Database["public"]["Enums"]["order_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          customer_id?: string
+          external_ref?: string | null
+          id?: string
+          license_id?: string | null
+          product_id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "licenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          changelog: string | null
+          created_at: string
+          download_url: string | null
+          id: string
+          latest_version: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          changelog?: string | null
+          created_at?: string
+          download_url?: string | null
+          id?: string
+          latest_version?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          changelog?: string | null
+          created_at?: string
+          download_url?: string | null
+          id?: string
+          latest_version?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin"
+      license_status: "active" | "suspended" | "expired" | "revoked"
+      order_status: "pending" | "paid" | "refunded" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +388,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin"],
+      license_status: ["active", "suspended", "expired", "revoked"],
+      order_status: ["pending", "paid", "refunded", "cancelled"],
+    },
   },
 } as const
