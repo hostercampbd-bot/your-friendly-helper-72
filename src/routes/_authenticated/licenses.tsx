@@ -115,7 +115,7 @@ function Page() {
             <ManageLicense
               license={detail}
               activations={activations.filter((a: any) => a.license_id === detail.id)}
-              onUpdate={(v) => updateM.mutate({ id: detail.id, ...v })}
+              onUpdate={(v: any) => updateM.mutate({ id: detail.id, ...v })}
               onRemoveActivation={(id: string) => rmActM.mutate(id)}
             />
           )}
