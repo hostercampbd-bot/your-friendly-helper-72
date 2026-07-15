@@ -12,4 +12,10 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Target a plain Node.js server (for cPanel Passenger, VPS, Docker, etc.).
+  // Inside Lovable's own build this override is ignored and Cloudflare is used;
+  // when you run `bun run build` yourself, Nitro emits `.output/server/index.mjs`.
+  nitro: {
+    preset: "node-server",
+  },
 });
