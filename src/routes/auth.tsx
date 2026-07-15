@@ -35,7 +35,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      router.navigate({ to: "/_authenticated/dashboard" });
+      router.navigate({ to: "/dashboard" });
     } catch (err: any) {
       toast.error(err.message ?? "Auth failed");
     } finally {
