@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { verifyPluginSecret } from "@/lib/license.server";
+// verifyPluginSecret loaded dynamically
 
 function json(b: unknown, s = 200) {
   return new Response(JSON.stringify(b), { status: s, headers: { "content-type": "application/json" } });
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/api/public/license/update")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        if (!verifyPluginSecret(request.headers.get("x-plugin-secret"))) {
+        const { verifyPluginSecret } = await import("@/lib/license.server"); if (!verifyPluginSecret(request.headers.get("x-plugin-secret"))) {
           return json({ error: "unauthorized" }, 401);
         }
         const url = new URL(request.url);

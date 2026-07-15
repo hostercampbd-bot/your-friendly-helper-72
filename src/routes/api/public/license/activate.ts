@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { verifyPluginSecret } from "@/lib/license.server";
+// verifyPluginSecret loaded dynamically
 
 const Body = z.object({
   license_key: z.string().min(4),
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/public/license/activate")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        if (!verifyPluginSecret(request.headers.get("x-plugin-secret"))) {
+        const { verifyPluginSecret } = await import("@/lib/license.server"); if (!verifyPluginSecret(request.headers.get("x-plugin-secret"))) {
           return json({ success: false, error: "unauthorized" }, 401);
         }
         let parsed;
