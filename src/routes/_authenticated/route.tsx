@@ -1,6 +1,20 @@
-import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  useRouter,
+  useRouterState,
+} from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -12,33 +26,75 @@ export const Route = createFileRoute("/_authenticated")({
   component: Layout,
 });
 
+const TITLES: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/licenses": "Licenses",
+  "/orders": "Orders",
+  "/customers": "Customers",
+  "/products": "Products",
+  "/settings": "Settings",
+};
+
 function Layout() {
   const router = useRouter();
+  const { user } = Route.useRouteContext();
+  const path = useRouterState({ select: (r) => r.location.pathname });
+  const title =
+    Object.entries(TITLES).find(([p]) => path.startsWith(p))?.[1] ?? "Admin";
+
   const signOut = async () => {
     await supabase.auth.signOut();
     router.navigate({ to: "/auth" });
   };
-  const linkCls = "text-muted-foreground hover:text-foreground";
-  const activeCls = { className: "text-foreground font-medium" };
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-6">
-            <Link to="/dashboard" className="font-semibold">License Panel</Link>
-            <nav className="flex gap-4 text-sm">
-              <Link to="/dashboard" className={linkCls} activeProps={activeCls}>Dashboard</Link>
-              <Link to="/licenses" className={linkCls} activeProps={activeCls}>Licenses</Link>
-              <Link to="/orders" className={linkCls} activeProps={activeCls}>Orders</Link>
-              <Link to="/customers" className={linkCls} activeProps={activeCls}>Customers</Link>
-              <Link to="/products" className={linkCls} activeProps={activeCls}>Products</Link>
-              <Link to="/settings" className={linkCls} activeProps={activeCls}>Settings</Link>
-            </nav>
-          </div>
-          <Button variant="ghost" size="sm" onClick={signOut}>Sign out</Button>
-        </div>
-      </header>
-      <main className="mx-auto max-w-7xl p-6"><Outlet /></main>
-    </div>
+    <SidebarProvider>
+      <div
+        className="flex min-h-screen w-full bg-background text-foreground"
+        style={
+          {
+            "--sidebar-width": "16rem",
+            "--sidebar-width-icon": "3.25rem",
+          } as React.CSSProperties
+        }
+      >
+        <AppSidebar />
+        <SidebarInset className="bg-transparent">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border/60 bg-background/70 px-4 backdrop-blur-md md:px-6">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="h-5" />
+            <div className="flex flex-1 items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <h1 className="font-display text-base font-semibold tracking-tight">
+                  {title}
+                </h1>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="hidden text-right text-xs leading-tight sm:block">
+                  <div className="font-medium text-foreground">
+                    {user?.email}
+                  </div>
+                  <div className="text-muted-foreground">Signed in</div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={signOut}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut className="mr-1.5 h-4 w-4" />
+                  Sign out
+                </Button>
+              </div>
+            </div>
+          </header>
+          <main className="flex-1 p-4 md:p-8">
+            <div className="mx-auto w-full max-w-7xl">
+              <Outlet />
+            </div>
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 }
