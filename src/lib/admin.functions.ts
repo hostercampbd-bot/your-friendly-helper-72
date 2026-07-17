@@ -45,7 +45,7 @@ export const upsertProduct = createServerFn({ method: "POST" })
       name: z.string().min(1),
       slug: z.string().min(1),
       latest_version: z.string().min(1),
-      download_url: z.string().url().optional().nullable().or(z.literal("")),
+      download_url: z.string().optional().nullable(),
       changelog: z.string().optional().nullable(),
     }).parse(d),
   )
