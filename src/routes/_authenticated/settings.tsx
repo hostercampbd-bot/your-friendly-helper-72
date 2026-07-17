@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -6,9 +7,10 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: Page,
 });
 
-const BASE = "https://project--f5957795-3702-4047-a391-6c229e86dfa7.lovable.app";
-
 function Page() {
+  const [base, setBase] = useState("");
+  useEffect(() => { setBase(window.location.origin); }, []);
+
   return (
     <div className="space-y-6 max-w-3xl">
       <h1 className="text-2xl font-semibold">Settings & Plugin API</h1>
