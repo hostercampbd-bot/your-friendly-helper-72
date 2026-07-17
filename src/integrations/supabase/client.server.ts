@@ -51,14 +51,6 @@ function createSupabaseAdminClient() {
     throw new Error(message);
   }
 
-  // Node.js < 22 lacks a global WebSocket. supabase-js realtime requires a
-  // working constructor at init time even when no channels are opened.
-  if (typeof (globalThis as any).WebSocket === 'undefined') {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const WS = require('ws');
-    (globalThis as any).WebSocket = WS;
-  }
-
   return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     global: {
       fetch: createSupabaseFetch(SUPABASE_SERVICE_ROLE_KEY),
