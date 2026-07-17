@@ -16,6 +16,16 @@ function Dashboard() {
   const admin = useQuery({ queryKey: ["is-admin"], queryFn: () => check() });
 
   if (admin.isLoading) return <div>Loading...</div>;
+  if (admin.isError) {
+    return (
+      <div role="alert" className="space-y-2">
+        <h1 className="text-xl font-semibold">Dashboard unavailable</h1>
+        <p className="text-sm text-destructive">
+          {admin.error instanceof Error ? admin.error.message : "Unable to verify administrator access."}
+        </p>
+      </div>
+    );
+  }
   if (!admin.data?.isAdmin) {
     return (
       <Card className="max-w-md">
