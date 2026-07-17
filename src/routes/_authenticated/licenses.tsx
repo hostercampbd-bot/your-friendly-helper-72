@@ -39,6 +39,7 @@ function Page() {
   const q = useQuery({ queryKey: ["all"], queryFn: () => list() });
   const [open, setOpen] = useState(false);
   const [detail, setDetail] = useState<any>(null);
+  const [confirmDel, setConfirmDel] = useState<any>(null);
 
   const createM = useMutation({
     mutationFn: (v: any) => create({ data: v }),
