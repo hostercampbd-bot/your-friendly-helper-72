@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -6,9 +7,10 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: Page,
 });
 
-const BASE = "https://project--f5957795-3702-4047-a391-6c229e86dfa7.lovable.app";
-
 function Page() {
+  const [base, setBase] = useState("");
+  useEffect(() => { setBase(window.location.origin); }, []);
+
   return (
     <div className="space-y-6 max-w-3xl">
       <h1 className="text-2xl font-semibold">Settings & Plugin API</h1>
@@ -31,7 +33,7 @@ function Page() {
           <CardTitle>API base URL</CardTitle>
         </CardHeader>
         <CardContent>
-          <code className="block break-all rounded bg-muted p-3 text-sm">{BASE}</code>
+          <code className="block break-all rounded bg-muted p-3 text-sm">{base}</code>
         </CardContent>
       </Card>
 
@@ -52,7 +54,7 @@ function Page() {
       <Card>
         <CardHeader><CardTitle>WordPress plugin snippet (PHP)</CardTitle></CardHeader>
         <CardContent>
-          <pre className="overflow-x-auto rounded bg-muted p-3 text-xs">{`define('LICENSE_API_BASE', '${BASE}');
+          <pre className="overflow-x-auto rounded bg-muted p-3 text-xs">{`define('LICENSE_API_BASE', '${base}');
 define('LICENSE_API_SECRET', 'PASTE_YOUR_PLUGIN_API_SECRET_HERE');
 
 function my_license_call($path, $body = null, $method = 'POST') {
