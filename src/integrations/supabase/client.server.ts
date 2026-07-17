@@ -3,7 +3,15 @@
 // Use this for admin operations in server functions and server routes only.
 // For user-authenticated queries (with RLS), use the auth middleware instead.
 import { createClient } from '@supabase/supabase-js';
+import WS from 'ws';
 import type { Database } from './types';
+
+// Node.js < 22 lacks a global WebSocket. supabase-js realtime requires a
+// working constructor at init time even when no channels are opened.
+// Install once at module load (ESM-safe, unlike require()).
+if (typeof (globalThis as any).WebSocket === 'undefined') {
+  (globalThis as any).WebSocket = WS as unknown as typeof WebSocket;
+}
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
@@ -41,14 +49,6 @@ function createSupabaseAdminClient() {
     const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
-  }
-
-  // Node.js < 22 lacks a global WebSocket. supabase-js realtime requires a
-  // working constructor at init time even when no channels are opened.
-  if (typeof (globalThis as any).WebSocket === 'undefined') {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const WS = require('ws');
-    (globalThis as any).WebSocket = WS;
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
