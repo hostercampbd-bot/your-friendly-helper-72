@@ -51,12 +51,13 @@ export const upsertProduct = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const payload = { ...data, download_url: data.download_url || null };
-    const { data: row, error } = data.id
-      ? await context.supabase.from("products").update(payload).eq("id", data.id).select().single()
+    const { id, ...rest } = data;
+    const payload = { ...rest, download_url: rest.download_url || null };
+    const q = id
+      ? await context.supabase.from("products").update(payload).eq("id", id).select().single()
       : await context.supabase.from("products").insert(payload).select().single();
-    if (error) throw new Error(error.message);
-    return row;
+    if (q.error) throw new Error(q.error.message);
+    return q.data;
   });
 
 export const deleteProduct = createServerFn({ method: "POST" })
