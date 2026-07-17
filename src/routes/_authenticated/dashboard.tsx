@@ -1,10 +1,8 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAll, checkIsAdmin, claimFirstAdmin } from "@/lib/admin.functions";
+import { listAll, checkIsAdmin } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — License Panel" }] }),
@@ -12,10 +10,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function Dashboard() {
-  const router = useRouter();
   const check = useServerFn(checkIsAdmin);
   const list = useServerFn(listAll);
-  const claim = useServerFn(claimFirstAdmin);
 
   const admin = useQuery({ queryKey: ["is-admin"], queryFn: () => check() });
 
@@ -26,12 +22,8 @@ function Dashboard() {
         <CardHeader><CardTitle>Not an admin yet</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            You're signed in but don't have admin access. If no admin exists yet, claim it now.
+            You're signed in but don't have admin access. Contact the account administrator.
           </p>
-          <Button onClick={async () => {
-            try { await claim(); toast.success("You are now admin"); router.invalidate(); admin.refetch(); }
-            catch (e: any) { toast.error(e.message); }
-          }}>Claim admin</Button>
         </CardContent>
       </Card>
     );
