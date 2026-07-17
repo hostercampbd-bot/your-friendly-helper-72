@@ -102,9 +102,49 @@ function Page() {
                 <TableCell><Badge className={statusColors[l.status]}>{l.status}</Badge></TableCell>
                 <TableCell>{used} / {l.max_activations}</TableCell>
                 <TableCell className="text-xs">{l.expires_at ? new Date(l.expires_at).toLocaleDateString() : "—"}</TableCell>
-                <TableCell className="text-right space-x-1">
-                  <Button size="sm" variant="outline" onClick={() => setDetail(l)}>Manage</Button>
-                  <Button size="sm" variant="destructive" onClick={() => confirm("Delete license?") && delM.mutate(l.id)}>Del</Button>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(l.license_key); toast.success("Key copied"); }}>
+                        <Copy className="mr-2 h-4 w-4" /> Copy key
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setDetail(l)}>
+                        <Settings2 className="mr-2 h-4 w-4" /> Manage
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {l.status !== "active" && (
+                        <DropdownMenuItem onClick={() => updateM.mutate({ id: l.id, status: "active" })}>
+                          <Play className="mr-2 h-4 w-4" /> Activate
+                        </DropdownMenuItem>
+                      )}
+                      {l.status !== "suspended" && (
+                        <DropdownMenuItem onClick={() => updateM.mutate({ id: l.id, status: "suspended" })}>
+                          <Pause className="mr-2 h-4 w-4" /> Suspend
+                        </DropdownMenuItem>
+                      )}
+                      {l.status !== "revoked" && (
+                        <DropdownMenuItem onClick={() => updateM.mutate({ id: l.id, status: "revoked" })}>
+                          <Ban className="mr-2 h-4 w-4" /> Revoke
+                        </DropdownMenuItem>
+                      )}
+                      {used > 0 && (
+                        <DropdownMenuItem onClick={() => {
+                          activations.filter((a: any) => a.license_id === l.id).forEach((a: any) => rmActM.mutate(a.id));
+                          toast.success("Activations reset");
+                        }}>
+                          <RotateCcw className="mr-2 h-4 w-4" /> Reset activations
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setConfirmDel(l)}>
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             );
