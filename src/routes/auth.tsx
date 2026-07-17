@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,15 +19,6 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        navigate({ to: "/dashboard", replace: true });
-      }
-    });
-    return () => sub.subscription.unsubscribe();
-  }, [navigate]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
