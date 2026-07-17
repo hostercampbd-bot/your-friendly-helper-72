@@ -33,7 +33,7 @@ function Page() {
           <CardTitle>API base URL</CardTitle>
         </CardHeader>
         <CardContent>
-          <code className="block break-all rounded bg-muted p-3 text-sm">{BASE}</code>
+          <code className="block break-all rounded bg-muted p-3 text-sm">{base}</code>
         </CardContent>
       </Card>
 
@@ -54,7 +54,7 @@ function Page() {
       <Card>
         <CardHeader><CardTitle>WordPress plugin snippet (PHP)</CardTitle></CardHeader>
         <CardContent>
-          <pre className="overflow-x-auto rounded bg-muted p-3 text-xs">{`define('LICENSE_API_BASE', '${BASE}');
+          <pre className="overflow-x-auto rounded bg-muted p-3 text-xs">{`define('LICENSE_API_BASE', '${base}');
 define('LICENSE_API_SECRET', 'PASTE_YOUR_PLUGIN_API_SECRET_HERE');
 
 function my_license_call($path, $body = null, $method = 'POST') {
