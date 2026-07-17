@@ -43,10 +43,19 @@ export const Route = createFileRoute("/api/public/license/update")({
           .maybeSingle();
         if (!product) return json({ error: "product_not_found" }, 404);
 
+        let download_url = product.download_url;
+        if (download_url && download_url.startsWith("storage:")) {
+          const path = download_url.slice("storage:".length);
+          const { data: signed } = await supabaseAdmin.storage
+            .from("plugin-releases")
+            .createSignedUrl(path, 60 * 15);
+          download_url = signed?.signedUrl ?? null;
+        }
+
         return json({
           update_available: cmpVer(product.latest_version, current_version) > 0,
           latest_version: product.latest_version,
-          download_url: product.download_url,
+          download_url,
           changelog: product.changelog,
         });
       },
