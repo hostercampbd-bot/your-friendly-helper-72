@@ -5,6 +5,7 @@ import { z } from "zod";
 const Body = z.object({
   license_key: z.string().min(4),
   domain: z.string().min(1),
+  product_slug: z.string().min(1),
 });
 
 function normDomain(d: string) {
@@ -35,10 +36,13 @@ export const Route = createFileRoute("/api/public/license/activate")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: lic } = await supabaseAdmin
           .from("licenses")
-          .select("*")
+          .select("*, products!inner(slug)")
           .eq("license_key", parsed.license_key)
           .maybeSingle();
         if (!lic) return json({ success: false, error: "invalid_key" }, 404);
+        if ((lic as any).products?.slug !== parsed.product_slug) {
+          return json({ success: false, error: "product_mismatch" }, 403);
+        }
 
         // auto-expire
         if (lic.expires_at && new Date(lic.expires_at) < new Date() && lic.status === "active") {

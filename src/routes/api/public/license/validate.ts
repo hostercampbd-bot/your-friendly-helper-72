@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 // verifyPluginSecret loaded dynamically
 
-const Body = z.object({ license_key: z.string().min(4), domain: z.string().min(1) });
+const Body = z.object({ license_key: z.string().min(4), domain: z.string().min(1), product_slug: z.string().min(1) });
 
 function normDomain(d: string) {
   return d.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
