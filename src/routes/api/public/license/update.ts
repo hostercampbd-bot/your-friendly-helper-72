@@ -52,7 +52,7 @@ export const Route = createFileRoute("/api/public/license/update")({
           const path = download_url.slice("storage:".length);
           const { data: signed } = await supabaseAdmin.storage
             .from("plugin-releases")
-            .createSignedUrl(path, 60 * 15);
+            .createSignedUrl(path, 60 * 60 * 24);
           download_url = signed?.signedUrl ?? null;
         }
 
