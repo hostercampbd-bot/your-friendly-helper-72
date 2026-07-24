@@ -28,10 +28,13 @@ export const Route = createFileRoute("/api/public/license/validate")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: lic } = await supabaseAdmin
           .from("licenses")
-          .select("*")
+          .select("*, products!inner(slug)")
           .eq("license_key", parsed.license_key)
           .maybeSingle();
         if (!lic) return json({ valid: false, error: "invalid_key" }, 404);
+        if ((lic as any).products?.slug !== parsed.product_slug) {
+          return json({ valid: false, error: "product_mismatch" }, 403);
+        }
 
         if (lic.expires_at && new Date(lic.expires_at) < new Date() && lic.status === "active") {
           await supabaseAdmin.from("licenses").update({ status: "expired" }).eq("id", lic.id);
