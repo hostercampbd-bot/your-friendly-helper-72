@@ -40,14 +40,18 @@ function Page() {
       <Card>
         <CardHeader><CardTitle>Endpoints</CardTitle></CardHeader>
         <CardContent className="space-y-4 text-sm">
-          <Endpoint method="POST" path="/api/public/license/activate" body={`{ "license_key": "XXXX-XXXX-XXXX-XXXX", "domain": "example.com" }`}
+          <Endpoint method="POST" path="/api/public/license/activate" body={`{ "license_key": "XXXX-XXXX-XXXX-XXXX", "domain": "example.com", "product_slug": "my-plugin" }`}
             resp={`{ "success": true, "status": "active", "expires_at": "...", "activations_used": 1, "max_activations": 3 }`} />
-          <Endpoint method="POST" path="/api/public/license/validate" body={`{ "license_key": "...", "domain": "example.com" }`}
+          <Endpoint method="POST" path="/api/public/license/validate" body={`{ "license_key": "...", "domain": "example.com", "product_slug": "my-plugin" }`}
             resp={`{ "valid": true, "status": "active", "expires_at": "..." }`} />
-          <Endpoint method="POST" path="/api/public/license/deactivate" body={`{ "license_key": "...", "domain": "example.com" }`}
+          <Endpoint method="POST" path="/api/public/license/deactivate" body={`{ "license_key": "...", "domain": "example.com", "product_slug": "my-plugin" }`}
             resp={`{ "success": true }`} />
-          <Endpoint method="GET" path="/api/public/license/update?license_key=...&current_version=1.2.0"
+          <Endpoint method="GET" path="/api/public/license/update?license_key=...&product_slug=my-plugin&current_version=1.2.0"
             resp={`{ "update_available": true, "latest_version": "1.3.0", "download_url": "...", "changelog": "..." }`} />
+          <p className="text-xs text-muted-foreground">
+            <code>product_slug</code> must match the <strong>slug</strong> set on the license's product in the Products page.
+            Requests with a mismatched slug return <code>product_mismatch</code> (403) — this is how one license is scoped to one plugin/theme.
+          </p>
         </CardContent>
       </Card>
 
@@ -100,6 +104,7 @@ class My_Plugin_Updater {
 
         $url = MY_LICENSE_API_BASE . '/api/public/license/update'
              . '?license_key=' . urlencode($key)
+             . '&product_slug=' . urlencode(MY_PLUGIN_SLUG)
              . '&current_version=' . urlencode(MY_PLUGIN_VERSION);
 
         $res = wp_remote_get($url, [
@@ -194,15 +199,15 @@ My_Plugin_Updater::init();`}</pre>
 
 // On license form submit
 my_license_call('/api/public/license/activate',
-  ['license_key' => $key, 'domain' => home_url()]);
+  ['license_key' => $key, 'domain' => home_url(), 'product_slug' => MY_PLUGIN_SLUG]);
 
 // Daily cron
 my_license_call('/api/public/license/validate',
-  ['license_key' => $key, 'domain' => home_url()]);
+  ['license_key' => $key, 'domain' => home_url(), 'product_slug' => MY_PLUGIN_SLUG]);
 
 // On deactivation
 my_license_call('/api/public/license/deactivate',
-  ['license_key' => $key, 'domain' => home_url()]);`}</pre>
+  ['license_key' => $key, 'domain' => home_url(), 'product_slug' => MY_PLUGIN_SLUG]);`}</pre>
         </CardContent>
       </Card>
 
@@ -215,6 +220,7 @@ my_license_call('/api/public/license/deactivate',
             <li><code>suspended</code> / <code>expired</code> / <code>revoked</code> — license is not active</li>
             <li><code>activation_limit_reached</code> — max domains reached</li>
             <li><code>domain_not_activated</code> — this domain hasn't run activate yet</li>
+            <li><code>product_mismatch</code> — this license belongs to a different product (wrong <code>product_slug</code>)</li>
           </ul>
         </CardContent>
       </Card>

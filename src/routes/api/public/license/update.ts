@@ -24,16 +24,20 @@ export const Route = createFileRoute("/api/public/license/update")({
         }
         const url = new URL(request.url);
         const license_key = url.searchParams.get("license_key");
+        const product_slug = url.searchParams.get("product_slug");
         const current_version = url.searchParams.get("current_version") ?? "0.0.0";
-        if (!license_key) return json({ error: "invalid_request" }, 400);
+        if (!license_key || !product_slug) return json({ error: "invalid_request" }, 400);
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: lic } = await supabaseAdmin
           .from("licenses")
-          .select("id, product_id, status, expires_at")
+          .select("id, product_id, status, expires_at, products!inner(slug)")
           .eq("license_key", license_key)
           .maybeSingle();
         if (!lic) return json({ error: "invalid_key" }, 404);
+        if ((lic as any).products?.slug !== product_slug) {
+          return json({ error: "product_mismatch" }, 403);
+        }
         if (lic.status !== "active") return json({ error: lic.status }, 403);
 
         const { data: product } = await supabaseAdmin
