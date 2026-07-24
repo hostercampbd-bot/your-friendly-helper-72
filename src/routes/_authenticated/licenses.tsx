@@ -158,6 +158,7 @@ function Page() {
           })}
         </TableBody>
       </Table>
+      </Card>
 
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
         <DialogContent className="max-w-2xl">
