@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { MoreHorizontal, Play, Pause, Ban, Copy, Settings2, Trash2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -68,24 +70,29 @@ function Page() {
   const activations = q.data?.activations ?? [];
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between">
-        <h1 className="text-2xl font-semibold">Licenses</h1>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button disabled={!customers.length || !products.length}>New license</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>New license</DialogTitle></DialogHeader>
-            <CreateForm customers={customers} products={products} onSubmit={(v: any) => createM.mutate(v)} busy={createM.isPending} />
-          </DialogContent>
-        </Dialog>
-      </div>
+    <div>
+      <PageHeader
+        eyebrow="Licensing"
+        title="Licenses"
+        description="Issue, suspend, and monitor per-site plugin activations."
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button disabled={!customers.length || !products.length}>New license</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>New license</DialogTitle></DialogHeader>
+              <CreateForm customers={customers} products={products} onSubmit={(v: any) => createM.mutate(v)} busy={createM.isPending} />
+            </DialogContent>
+          </Dialog>
+        }
+      />
       {(!customers.length || !products.length) && (
-        <p className="text-sm text-muted-foreground">Create at least one product and customer first.</p>
+        <p className="mb-4 rounded-lg border border-dashed border-border/60 bg-muted/40 p-3 text-sm text-muted-foreground">Create at least one product and customer first.</p>
       )}
+      <Card className="overflow-hidden shadow-card-soft">
       <Table>
-        <TableHeader><TableRow>
+        <TableHeader><TableRow className="bg-muted/40 hover:bg-muted/40">
           <TableHead>Key</TableHead><TableHead>Product</TableHead><TableHead>Customer</TableHead>
           <TableHead>Status</TableHead><TableHead>Activations</TableHead><TableHead>Expires</TableHead><TableHead></TableHead>
         </TableRow></TableHeader>
