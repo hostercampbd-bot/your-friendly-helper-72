@@ -48,14 +48,14 @@ export function AppSidebar() {
           to="/dashboard"
           className="flex items-center gap-2.5 px-2 py-2.5 group-data-[collapsible=icon]:justify-center"
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-[0_0_20px_-4px_var(--color-primary)]">
-            <ShieldCheck className="h-4 w-4" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-primary text-primary-foreground shadow-glow">
+            <ShieldCheck className="h-4.5 w-4.5" />
           </div>
           <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
             <span className="font-display text-sm font-semibold tracking-tight">
               License Panel
             </span>
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+            <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
               Admin console
             </span>
           </div>
