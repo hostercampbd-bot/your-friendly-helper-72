@@ -9,7 +9,8 @@ const Body = z.object({
 });
 
 function normDomain(d: string) {
-  return d.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  // Preserve path so multi-site installs (example.com/site1 vs /site2) count separately
+  return d.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/+$/, "");
 }
 
 function json(body: unknown, status = 200) {

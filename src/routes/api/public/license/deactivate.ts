@@ -5,7 +5,7 @@ import { z } from "zod";
 const Body = z.object({ license_key: z.string().min(4), domain: z.string().min(1), product_slug: z.string().min(1) });
 
 function normDomain(d: string) {
-  return d.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  return d.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/+$/, "");
 }
 function json(b: unknown, s = 200) {
   return new Response(JSON.stringify(b), { status: s, headers: { "content-type": "application/json" } });

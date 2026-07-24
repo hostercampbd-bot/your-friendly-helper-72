@@ -88,19 +88,22 @@ class My_Plugin_Updater {
     public static function init() {
         add_filter('pre_set_site_transient_update_plugins', [__CLASS__, 'check_update']);
         add_filter('plugins_api',                            [__CLASS__, 'plugin_info'], 20, 3);
+        add_filter('upgrader_pre_download',                  [__CLASS__, 'pre_download'], 10, 3);
         add_action('upgrader_process_complete',              [__CLASS__, 'purge'], 10, 2);
     }
 
-    private static function remote_info() {
+    private static function remote_info($force = false) {
         static $cache = null;
-        if ($cache !== null) return $cache;
+        if (!$force && $cache !== null) return $cache;
 
         $key = get_option('my_plugin_license_key');
         if (!$key) return $cache = false;
 
         $transient_key = 'my_plugin_update_' . md5($key . MY_PLUGIN_VERSION);
-        $cached = get_transient($transient_key);
-        if ($cached !== false) return $cache = $cached;
+        if (!$force) {
+            $cached = get_transient($transient_key);
+            if ($cached !== false) return $cache = $cached;
+        }
 
         $url = MY_LICENSE_API_BASE . '/api/public/license/update'
              . '?license_key=' . urlencode($key)
@@ -108,7 +111,7 @@ class My_Plugin_Updater {
              . '&current_version=' . urlencode(MY_PLUGIN_VERSION);
 
         $res = wp_remote_get($url, [
-            'timeout' => 15,
+            'timeout' => 20,
             'headers' => ['X-Plugin-Secret' => MY_LICENSE_API_SECRET],
         ]);
         if (is_wp_error($res) || wp_remote_retrieve_response_code($res) !== 200) return $cache = false;
@@ -116,11 +119,11 @@ class My_Plugin_Updater {
         $data = json_decode(wp_remote_retrieve_body($res), true);
         if (!is_array($data)) return $cache = false;
 
-        set_transient($transient_key, $data, 6 * HOUR_IN_SECONDS);
+        // Cache metadata only for 1h; download_url is refreshed on demand
+        set_transient($transient_key, $data, HOUR_IN_SECONDS);
         return $cache = $data;
     }
 
-    // Injects into WP's update transient → shows "new version available" banner + "update now"
     public static function check_update($transient) {
         if (empty($transient->checked)) return $transient;
         $info = self::remote_info();
@@ -132,13 +135,12 @@ class My_Plugin_Updater {
             'plugin'      => MY_PLUGIN_FILE,
             'new_version' => $info['latest_version'],
             'url'         => MY_LICENSE_API_BASE,
-            'package'     => $info['download_url'], // signed URL from your API
+            'package'     => $info['download_url'],
             'tested'      => get_bloginfo('version'),
         ];
         return $transient;
     }
 
-    // Powers the "View version X.X.X details" modal
     public static function plugin_info($result, $action, $args) {
         if ($action !== 'plugin_information') return $result;
         if (empty($args->slug) || $args->slug !== MY_PLUGIN_SLUG) return $result;
@@ -163,7 +165,16 @@ class My_Plugin_Updater {
         ];
     }
 
-    // Clear cache after a successful update so the banner disappears
+    // Right before WP downloads the ZIP, refetch to get a fresh signed URL
+    public static function pre_download($reply, $package, $upgrader) {
+        if (!is_string($package) || strpos($package, MY_LICENSE_API_BASE) === false && strpos($package, 'plugin-releases') === false) return $reply;
+        $info = self::remote_info(true);
+        if (empty($info['download_url'])) return $reply;
+        $tmp = download_url($info['download_url'], 300);
+        if (is_wp_error($tmp)) return $tmp;
+        return $tmp;
+    }
+
     public static function purge($upgrader, $options) {
         if (($options['action'] ?? '') === 'update' && ($options['type'] ?? '') === 'plugin') {
             $key = get_option('my_plugin_license_key');
