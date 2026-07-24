@@ -10,6 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
+import { formatMoney, DEFAULT_CURRENCY } from "@/lib/currency";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/orders")({
@@ -43,38 +46,51 @@ function Page() {
   const orders = q.data?.orders ?? [];
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between">
-        <h1 className="text-2xl font-semibold">Orders</h1>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button disabled={!customers.length || !products.length} onClick={() => setEdit(null)}>New order</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>{edit ? "Edit" : "New"} order</DialogTitle></DialogHeader>
-            <Form initial={edit} customers={customers} products={products} licenses={licenses} onSubmit={(v: any) => saveM.mutate(v)} busy={saveM.isPending} />
-          </DialogContent>
-        </Dialog>
-      </div>
-      <Table>
-        <TableHeader><TableRow>
-          <TableHead>Date</TableHead><TableHead>Customer</TableHead><TableHead>Product</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead><TableHead>Ref</TableHead><TableHead></TableHead>
-        </TableRow></TableHeader>
-        <TableBody>
-          {orders.map((o: any) => (
-            <TableRow key={o.id}>
-              <TableCell className="text-xs">{new Date(o.created_at).toLocaleDateString()}</TableCell>
-              <TableCell>{customers.find((c: any) => c.id === o.customer_id)?.email}</TableCell>
-              <TableCell>{products.find((p: any) => p.id === o.product_id)?.name}</TableCell>
-              <TableCell>{o.currency} {Number(o.amount).toFixed(2)}</TableCell>
-              <TableCell><Badge variant={o.status === "paid" ? "default" : "secondary"}>{o.status}</Badge></TableCell>
-              <TableCell className="text-xs text-muted-foreground">{o.external_ref}</TableCell>
-              <TableCell className="text-right space-x-1">
-                <Button size="sm" variant="outline" onClick={() => { setEdit(o); setOpen(true); }}>Edit</Button>
-                <Button size="sm" variant="destructive" onClick={() => confirm("Delete?") && delM.mutate(o.id)}>Del</Button>
-              </TableCell>
+    <div>
+      <PageHeader
+        eyebrow="Sales"
+        title="Orders"
+        description="Track payments and reconcile with issued licenses."
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button disabled={!customers.length || !products.length} onClick={() => setEdit(null)}>New order</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>{edit ? "Edit" : "New"} order</DialogTitle></DialogHeader>
+              <Form initial={edit} customers={customers} products={products} licenses={licenses} onSubmit={(v: any) => saveM.mutate(v)} busy={saveM.isPending} />
+            </DialogContent>
+          </Dialog>
+        }
+      />
+      <Card className="overflow-hidden shadow-card-soft">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/40 hover:bg-muted/40">
+              <TableHead>Date</TableHead><TableHead>Customer</TableHead><TableHead>Product</TableHead><TableHead className="text-right">Amount</TableHead><TableHead>Status</TableHead><TableHead>Ref</TableHead><TableHead></TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {orders.length === 0 && (
+              <TableRow><TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">No orders yet.</TableCell></TableRow>
+            )}
+            {orders.map((o: any) => (
+              <TableRow key={o.id}>
+                <TableCell className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</TableCell>
+                <TableCell className="font-medium">{customers.find((c: any) => c.id === o.customer_id)?.email}</TableCell>
+                <TableCell>{products.find((p: any) => p.id === o.product_id)?.name}</TableCell>
+                <TableCell className="text-right font-display font-semibold">{formatMoney(o.amount, o.currency)}</TableCell>
+                <TableCell><Badge variant={o.status === "paid" ? "default" : "secondary"} className="uppercase tracking-wider text-[10px]">{o.status}</Badge></TableCell>
+                <TableCell className="text-xs text-muted-foreground">{o.external_ref}</TableCell>
+                <TableCell className="text-right space-x-1">
+                  <Button size="sm" variant="ghost" onClick={() => { setEdit(o); setOpen(true); }}>Edit</Button>
+                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => confirm("Delete?") && delM.mutate(o.id)}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   );
 }
@@ -86,7 +102,7 @@ function Form({ initial, customers, products, licenses, onSubmit, busy }: any) {
     product_id: initial?.product_id ?? products[0]?.id ?? "",
     license_id: initial?.license_id ?? "",
     amount: initial?.amount ?? 0,
-    currency: initial?.currency ?? "USD",
+    currency: initial?.currency ?? DEFAULT_CURRENCY,
     status: initial?.status ?? "pending",
     external_ref: initial?.external_ref ?? "",
   });

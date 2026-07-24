@@ -50,7 +50,7 @@ function Layout() {
   return (
     <SidebarProvider>
       <div
-        className="flex min-h-screen w-full bg-background text-foreground"
+        className="relative flex min-h-screen w-full bg-background text-foreground"
         style={
           {
             "--sidebar-width": "16rem",
@@ -58,23 +58,25 @@ function Layout() {
           } as React.CSSProperties
         }
       >
+        <div className="pointer-events-none fixed inset-0 -z-10 bg-gradient-mesh" />
         <AppSidebar />
         <SidebarInset className="bg-transparent">
-          <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border/60 bg-background/70 px-4 backdrop-blur-md md:px-6">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-border/60 bg-background/75 px-4 backdrop-blur-xl md:px-6">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="h-5" />
             <div className="flex flex-1 items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <h1 className="font-display text-base font-semibold tracking-tight">
-                  {title}
+                <h1 className="font-display text-sm font-semibold tracking-tight text-muted-foreground">
+                  <span className="text-foreground">{title}</span>
                 </h1>
               </div>
               <div className="flex items-center gap-3">
                 <div className="hidden text-right text-xs leading-tight sm:block">
-                  <div className="font-medium text-foreground">
-                    {user?.email}
-                  </div>
-                  <div className="text-muted-foreground">Signed in</div>
+                  <div className="font-medium text-foreground">{user?.email}</div>
+                  <div className="text-[11px] text-muted-foreground">Signed in</div>
+                </div>
+                <div className="hidden h-8 w-8 items-center justify-center rounded-full bg-gradient-primary text-[11px] font-semibold text-primary-foreground shadow-glow sm:flex">
+                  {user?.email?.[0]?.toUpperCase() ?? "A"}
                 </div>
                 <Button
                   variant="ghost"
@@ -83,7 +85,7 @@ function Layout() {
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <LogOut className="mr-1.5 h-4 w-4" />
-                  Sign out
+                  <span className="hidden sm:inline">Sign out</span>
                 </Button>
               </div>
             </div>

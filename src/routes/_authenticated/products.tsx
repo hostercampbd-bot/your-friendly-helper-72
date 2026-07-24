@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 
@@ -39,36 +41,45 @@ function ProductsPage() {
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between">
-        <h1 className="text-2xl font-semibold">Products</h1>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button onClick={() => setEdit(null)}>New product</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>{edit ? "Edit" : "New"} product</DialogTitle></DialogHeader>
-            <ProductForm initial={edit} onSubmit={(v: any) => saveM.mutate(v)} busy={saveM.isPending} />
-          </DialogContent>
-        </Dialog>
-      </div>
-      <Table>
-        <TableHeader><TableRow>
-          <TableHead>Name</TableHead><TableHead>Slug</TableHead><TableHead>Version</TableHead><TableHead>Download</TableHead><TableHead></TableHead>
-        </TableRow></TableHeader>
-        <TableBody>
-          {(q.data?.products ?? []).map((p: any) => (
-            <TableRow key={p.id}>
-              <TableCell>{p.name}</TableCell>
-              <TableCell><code>{p.slug}</code></TableCell>
-              <TableCell>{p.latest_version}</TableCell>
-              <TableCell className="max-w-xs truncate text-xs text-muted-foreground">{p.download_url}</TableCell>
-              <TableCell className="text-right space-x-2">
-                <Button size="sm" variant="outline" onClick={() => { setEdit(p); setOpen(true); }}>Edit</Button>
-                <Button size="sm" variant="destructive" onClick={() => confirm("Delete?") && delM.mutate(p.id)}>Delete</Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div>
+      <PageHeader
+        eyebrow="Catalog"
+        title="Products"
+        description="Your licensable plugins, versions, and release ZIPs."
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button onClick={() => setEdit(null)}>New product</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>{edit ? "Edit" : "New"} product</DialogTitle></DialogHeader>
+              <ProductForm initial={edit} onSubmit={(v: any) => saveM.mutate(v)} busy={saveM.isPending} />
+            </DialogContent>
+          </Dialog>
+        }
+      />
+      <Card className="overflow-hidden shadow-card-soft">
+        <Table>
+          <TableHeader><TableRow className="bg-muted/40 hover:bg-muted/40">
+            <TableHead>Name</TableHead><TableHead>Slug</TableHead><TableHead>Version</TableHead><TableHead>Download</TableHead><TableHead></TableHead>
+          </TableRow></TableHeader>
+          <TableBody>
+            {(q.data?.products ?? []).length === 0 && (
+              <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No products yet.</TableCell></TableRow>
+            )}
+            {(q.data?.products ?? []).map((p: any) => (
+              <TableRow key={p.id}>
+                <TableCell className="font-medium">{p.name}</TableCell>
+                <TableCell><code className="rounded bg-muted px-1.5 py-0.5 text-xs">{p.slug}</code></TableCell>
+                <TableCell><code className="text-xs">{p.latest_version}</code></TableCell>
+                <TableCell className="max-w-xs truncate text-xs text-muted-foreground">{p.download_url}</TableCell>
+                <TableCell className="text-right space-x-1">
+                  <Button size="sm" variant="ghost" onClick={() => { setEdit(p); setOpen(true); }}>Edit</Button>
+                  <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => confirm("Delete?") && delM.mutate(p.id)}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   );
 }
