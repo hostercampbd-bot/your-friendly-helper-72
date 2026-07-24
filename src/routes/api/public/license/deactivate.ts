@@ -28,10 +28,13 @@ export const Route = createFileRoute("/api/public/license/deactivate")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: lic } = await supabaseAdmin
           .from("licenses")
-          .select("id")
+          .select("id, products!inner(slug)")
           .eq("license_key", parsed.license_key)
           .maybeSingle();
         if (!lic) return json({ success: false, error: "invalid_key" }, 404);
+        if ((lic as any).products?.slug !== parsed.product_slug) {
+          return json({ success: false, error: "product_mismatch" }, 403);
+        }
 
         await supabaseAdmin
           .from("activations")
