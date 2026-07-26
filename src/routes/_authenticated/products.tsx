@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { listAll, upsertProduct, deleteProduct } from "@/lib/admin.functions";
+import { listAll, upsertProduct, deleteProduct, regenerateProductSecret } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
 import { toast } from "sonner";
-import { Upload } from "lucide-react";
+import { Upload, Copy, Eye, EyeOff, RefreshCw } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/products")({
   head: () => ({ meta: [{ title: "Products" }] }),
@@ -25,6 +26,7 @@ function ProductsPage() {
   const list = useServerFn(listAll);
   const save = useServerFn(upsertProduct);
   const del = useServerFn(deleteProduct);
+  const regen = useServerFn(regenerateProductSecret);
   const q = useQuery({ queryKey: ["all"], queryFn: () => list() });
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<any>(null);
@@ -39,6 +41,12 @@ function ProductsPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["all"] }); toast.success("Deleted"); },
     onError: (e: any) => toast.error(e.message),
   });
+  const regenM = useMutation({
+    mutationFn: (id: string) => regen({ data: { id } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["all"] }); toast.success("New API secret generated"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
 
   return (
     <div>
@@ -59,17 +67,24 @@ function ProductsPage() {
       <Card className="overflow-hidden shadow-card-soft">
         <Table>
           <TableHeader><TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead>Name</TableHead><TableHead>Slug</TableHead><TableHead>Version</TableHead><TableHead>Download</TableHead><TableHead></TableHead>
+            <TableHead>Name</TableHead><TableHead>Slug</TableHead><TableHead>Version</TableHead><TableHead>API Secret</TableHead><TableHead>Download</TableHead><TableHead></TableHead>
           </TableRow></TableHeader>
           <TableBody>
             {(q.data?.products ?? []).length === 0 && (
-              <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No products yet.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No products yet.</TableCell></TableRow>
             )}
             {(q.data?.products ?? []).map((p: any) => (
               <TableRow key={p.id}>
                 <TableCell className="font-medium">{p.name}</TableCell>
                 <TableCell><code className="rounded bg-muted px-1.5 py-0.5 text-xs">{p.slug}</code></TableCell>
                 <TableCell><code className="text-xs">{p.latest_version}</code></TableCell>
+                <TableCell>
+                  <SecretCell
+                    secret={p.api_secret}
+                    onRegenerate={() => confirm("Regenerate the API secret? Sites using the old secret will stop validating until updated.") && regenM.mutate(p.id)}
+                    busy={regenM.isPending}
+                  />
+                </TableCell>
                 <TableCell className="max-w-xs truncate text-xs text-muted-foreground">{p.download_url}</TableCell>
                 <TableCell className="text-right space-x-1">
                   <Button size="sm" variant="ghost" onClick={() => { setEdit(p); setOpen(true); }}>Edit</Button>
@@ -77,6 +92,7 @@ function ProductsPage() {
                 </TableCell>
               </TableRow>
             ))}
+
           </TableBody>
         </Table>
       </Card>
@@ -157,5 +173,29 @@ function ProductForm({ initial, onSubmit, busy }: any) {
       <div><Label>Changelog</Label><Textarea rows={5} value={f.changelog} onChange={(e) => setF({ ...f, changelog: e.target.value })} /></div>
       <Button type="submit" disabled={busy || uploading}>{busy ? "..." : "Save"}</Button>
     </form>
+  );
+}
+
+function SecretCell({ secret, onRegenerate, busy }: { secret?: string | null; onRegenerate: () => void; busy?: boolean }) {
+  const [show, setShow] = useState(false);
+  if (!secret) return <span className="text-xs text-muted-foreground">—</span>;
+  return (
+    <div className="flex items-center gap-1">
+      <code className="max-w-[9rem] truncate rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
+        {show ? secret : "•".repeat(16)}
+      </code>
+      <Button size="icon" variant="ghost" className="h-7 w-7" title={show ? "Hide" : "Show"} onClick={() => setShow((s) => !s)}>
+        {show ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+      </Button>
+      <Button
+        size="icon" variant="ghost" className="h-7 w-7" title="Copy secret"
+        onClick={() => { navigator.clipboard.writeText(secret); toast.success("API secret copied"); }}
+      >
+        <Copy className="h-3.5 w-3.5" />
+      </Button>
+      <Button size="icon" variant="ghost" className="h-7 w-7" title="Regenerate secret" disabled={busy} onClick={onRegenerate}>
+        <RefreshCw className={`h-3.5 w-3.5 ${busy ? "animate-spin" : ""}`} />
+      </Button>
+    </div>
   );
 }

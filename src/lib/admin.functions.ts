@@ -204,3 +204,20 @@ export const deleteOrder = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
+// ---------- PRODUCT API SECRET ----------
+export const regenerateProductSecret = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { generateApiSecret } = await import("./license.server");
+    const { data: row, error } = await context.supabase
+      .from("products")
+      .update({ api_secret: generateApiSecret() })
+      .eq("id", data.id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return row;
+  });

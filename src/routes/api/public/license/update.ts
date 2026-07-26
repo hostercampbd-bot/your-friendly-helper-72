@@ -19,9 +19,8 @@ export const Route = createFileRoute("/api/public/license/update")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const { verifyPluginSecret } = await import("@/lib/license.server"); if (!verifyPluginSecret(request.headers.get("x-plugin-secret"))) {
-          return json({ error: "unauthorized" }, 401);
-        }
+        const providedSecret = request.headers.get("x-plugin-secret");
+        const { verifyProductSecret } = await import("@/lib/license.server");
         const url = new URL(request.url);
         const license_key = url.searchParams.get("license_key");
         const product_slug = url.searchParams.get("product_slug");
@@ -31,12 +30,15 @@ export const Route = createFileRoute("/api/public/license/update")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: lic } = await supabaseAdmin
           .from("licenses")
-          .select("id, product_id, status, expires_at, products!inner(slug)")
+          .select("id, product_id, status, expires_at, products!inner(slug, api_secret)")
           .eq("license_key", license_key)
           .maybeSingle();
         if (!lic) return json({ error: "invalid_key" }, 404);
         if ((lic as any).products?.slug !== product_slug) {
           return json({ error: "product_mismatch" }, 403);
+        }
+        if (!verifyProductSecret(providedSecret, (lic as any).products?.api_secret)) {
+          return json({ error: "unauthorized" }, 401);
         }
         if (lic.status !== "active") return json({ error: lic.status }, 403);
 

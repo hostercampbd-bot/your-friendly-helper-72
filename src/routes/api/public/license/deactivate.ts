@@ -15,9 +15,8 @@ export const Route = createFileRoute("/api/public/license/deactivate")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { verifyPluginSecret } = await import("@/lib/license.server"); if (!verifyPluginSecret(request.headers.get("x-plugin-secret"))) {
-          return json({ success: false, error: "unauthorized" }, 401);
-        }
+        const providedSecret = request.headers.get("x-plugin-secret");
+        const { verifyProductSecret } = await import("@/lib/license.server");
         let parsed;
         try {
           parsed = Body.parse(await request.json());
@@ -28,12 +27,15 @@ export const Route = createFileRoute("/api/public/license/deactivate")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: lic } = await supabaseAdmin
           .from("licenses")
-          .select("id, products!inner(slug)")
+          .select("id, products!inner(slug, api_secret)")
           .eq("license_key", parsed.license_key)
           .maybeSingle();
         if (!lic) return json({ success: false, error: "invalid_key" }, 404);
         if ((lic as any).products?.slug !== parsed.product_slug) {
           return json({ success: false, error: "product_mismatch" }, 403);
+        }
+        if (!verifyProductSecret(providedSecret, (lic as any).products?.api_secret)) {
+          return json({ success: false, error: "unauthorized" }, 401);
         }
 
         await supabaseAdmin
