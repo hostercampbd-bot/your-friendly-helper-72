@@ -175,3 +175,27 @@ function ProductForm({ initial, onSubmit, busy }: any) {
     </form>
   );
 }
+
+function SecretCell({ secret, onRegenerate, busy }: { secret?: string | null; onRegenerate: () => void; busy?: boolean }) {
+  const [show, setShow] = useState(false);
+  if (!secret) return <span className="text-xs text-muted-foreground">—</span>;
+  return (
+    <div className="flex items-center gap-1">
+      <code className="max-w-[9rem] truncate rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
+        {show ? secret : "•".repeat(16)}
+      </code>
+      <Button size="icon" variant="ghost" className="h-7 w-7" title={show ? "Hide" : "Show"} onClick={() => setShow((s) => !s)}>
+        {show ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+      </Button>
+      <Button
+        size="icon" variant="ghost" className="h-7 w-7" title="Copy secret"
+        onClick={() => { navigator.clipboard.writeText(secret); toast.success("API secret copied"); }}
+      >
+        <Copy className="h-3.5 w-3.5" />
+      </Button>
+      <Button size="icon" variant="ghost" className="h-7 w-7" title="Regenerate secret" disabled={busy} onClick={onRegenerate}>
+        <RefreshCw className={`h-3.5 w-3.5 ${busy ? "animate-spin" : ""}`} />
+      </Button>
+    </div>
+  );
+}
