@@ -26,6 +26,7 @@ function ProductsPage() {
   const list = useServerFn(listAll);
   const save = useServerFn(upsertProduct);
   const del = useServerFn(deleteProduct);
+  const regen = useServerFn(regenerateProductSecret);
   const q = useQuery({ queryKey: ["all"], queryFn: () => list() });
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<any>(null);
@@ -40,6 +41,12 @@ function ProductsPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["all"] }); toast.success("Deleted"); },
     onError: (e: any) => toast.error(e.message),
   });
+  const regenM = useMutation({
+    mutationFn: (id: string) => regen({ data: { id } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["all"] }); toast.success("New API secret generated"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
 
   return (
     <div>
