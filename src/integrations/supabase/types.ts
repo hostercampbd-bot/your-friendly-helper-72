@@ -193,6 +193,7 @@ export type Database = {
       }
       products: {
         Row: {
+          api_secret: string
           changelog: string | null
           created_at: string
           download_url: string | null
@@ -203,6 +204,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          api_secret?: string
           changelog?: string | null
           created_at?: string
           download_url?: string | null
@@ -213,6 +215,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          api_secret?: string
           changelog?: string | null
           created_at?: string
           download_url?: string | null
