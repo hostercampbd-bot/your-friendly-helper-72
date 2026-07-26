@@ -67,17 +67,24 @@ function ProductsPage() {
       <Card className="overflow-hidden shadow-card-soft">
         <Table>
           <TableHeader><TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead>Name</TableHead><TableHead>Slug</TableHead><TableHead>Version</TableHead><TableHead>Download</TableHead><TableHead></TableHead>
+            <TableHead>Name</TableHead><TableHead>Slug</TableHead><TableHead>Version</TableHead><TableHead>API Secret</TableHead><TableHead>Download</TableHead><TableHead></TableHead>
           </TableRow></TableHeader>
           <TableBody>
             {(q.data?.products ?? []).length === 0 && (
-              <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">No products yet.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No products yet.</TableCell></TableRow>
             )}
             {(q.data?.products ?? []).map((p: any) => (
               <TableRow key={p.id}>
                 <TableCell className="font-medium">{p.name}</TableCell>
                 <TableCell><code className="rounded bg-muted px-1.5 py-0.5 text-xs">{p.slug}</code></TableCell>
                 <TableCell><code className="text-xs">{p.latest_version}</code></TableCell>
+                <TableCell>
+                  <SecretCell
+                    secret={p.api_secret}
+                    onRegenerate={() => confirm("Regenerate the API secret? Sites using the old secret will stop validating until updated.") && regenM.mutate(p.id)}
+                    busy={regenM.isPending}
+                  />
+                </TableCell>
                 <TableCell className="max-w-xs truncate text-xs text-muted-foreground">{p.download_url}</TableCell>
                 <TableCell className="text-right space-x-1">
                   <Button size="sm" variant="ghost" onClick={() => { setEdit(p); setOpen(true); }}>Edit</Button>
@@ -85,6 +92,7 @@ function ProductsPage() {
                 </TableCell>
               </TableRow>
             ))}
+
           </TableBody>
         </Table>
       </Card>
