@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { listAll, upsertProduct, deleteProduct } from "@/lib/admin.functions";
+import { listAll, upsertProduct, deleteProduct, regenerateProductSecret } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
 import { toast } from "sonner";
-import { Upload } from "lucide-react";
+import { Upload, Copy, Eye, EyeOff, RefreshCw } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/products")({
   head: () => ({ meta: [{ title: "Products" }] }),
